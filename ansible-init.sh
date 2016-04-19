@@ -14,12 +14,13 @@ if [ -z "$1" ]
   else
     project_dir=$1
     shift
+    # set roles if present
     if [ -e $project_dir ]; then
       echo "Project \"$project_dir\" already exists, please remove it first"
       exit
     fi
     tmpfolder=$(mktemp -d)
-    extra_vars='"project_dir": "/tmp/project_tmp"'
+    extra_vars='"project_dir": "'$tmpfolder'"'
     role_vars=" "
     if [ $# -gt 0 ]; then
       role_vars=", \"roles\": ["
@@ -29,9 +30,8 @@ if [ -z "$1" ]
       done
       role_vars+="]"
     fi
-    # extra vars arguments
     ansible-playbook init.yml -i inventory --connection=local -e {"$extra_vars $role_vars}" && {
-      mv /tmp/project_tmp $project_dir;
+      mv $tmpfolder $project_dir;
       echo "You project is at" $project_dir;
       echo " ";
       rm -rf $tmpfolder
